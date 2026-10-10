@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <rect x="24" y="24" width="464" height="464" rx="92" stroke="url(#goldGrad)" stroke-width="6" stroke-opacity="0.65" />
+
+  <!-- Protective Shield Outline -->
+  <path
+    d="M256 68L404 126V248C404 345 340 418 256 448C172 418 108 345 108 248V126L256 68Z"
+    fill="#0F172A"
+    fill-opacity="0.55"
+    stroke="url(#goldGrad)"
+    stroke-width="12"
+    stroke-linejoin="round"
+  />
+
+  <!-- Family Silhouettes (Parents + Child) Inside Shield -->
+  <!-- Left Parent -->
+  <circle cx="206" cy="204" r="24" fill="url(#goldGrad)" />
+  <path d="M164 278C164 252 183 236 206 236C229 236 248 252 248 278V304H164V278Z" fill="url(#goldGrad)" />
+
+  <!-- Right Parent -->
+  <circle cx="306" cy="204" r="24" fill="url(#goldGrad)" />
+  <path d="M264 278C264 252 283 236 306 236C329 236 348 252 348 278V304H264V278Z" fill="url(#goldGrad)" />
+
+  <!-- Center Child / Flame of Protection -->
+  <circle cx="256" cy="238" r="19" fill="#FFFFFF" />
+  <path d="M224 304C224 282 238 268 256 268C274 268 288 282 288 304V322H224V304Z" fill="#FFFFFF" />
+
+  <!-- Protective Cupped Hands Arc -->
+  <path
+    d="M148 316C174 358 212 382 256 382C300 382 338 358 364 316"
+    stroke="url(#goldGrad)"
+    stroke-width="14"
+    stroke-linecap="round"
+  />
+</svg>

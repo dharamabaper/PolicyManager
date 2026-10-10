@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "AgentProfile": {
+      "title": "AgentProfile",
+      "description": "Authenticated LIC Agent profile containing Gmail identity, registered mobile number, and LIC agency credentials.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the LIC agent.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the LIC agent.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified Gmail address of the LIC agent.",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "mobileNumber": {
+          "type": "string",
+          "description": "Registered 10-digit Indian mobile number of the LIC agent.",
+          "minLength": 8,
+          "maxLength": 20,
+          "pattern": "^[0-9+\\-\\s()]{8,20}$"
+        },
+        "agencyCode": {
+          "type": "string",
+          "description": "Official LIC Agency Code.",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "branchCode": {
+          "type": "string",
+          "description": "LIC Branch Office Code.",
+          "minLength": 2,
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last profile update."
+        }
+      },
+      "required": [
+        "uid",
+        "fullName",
+        "email",
+        "mobileNumber",
+        "agencyCode",
+        "branchCode",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomerPolicy": {
+      "title": "CustomerPolicy",
+      "description": "LIC Customer Policy record managed by an authenticated LIC agent for policy tracking, maturity calculation, and renewal notifications.",
+      "type": "object",
+      "properties": {
+        "agentId": {
+          "type": "string",
+          "description": "UID of the owning LIC agent.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "policyNumber": {
+          "type": "string",
+          "description": "9-digit LIC Policy Number.",
+          "minLength": 5,
+          "maxLength": 24,
+          "pattern": "^[0-9A-Za-z\\-]{5,24}$"
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Full name of the policyholder.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "customerMobile": {
+          "type": "string",
+          "description": "Mobile number of the policyholder for WhatsApp/SMS renewal alerts.",
+          "minLength": 8,
+          "maxLength": 20,
+          "pattern": "^[0-9+\\-\\s()]{8,20}$"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "Policyholder date of birth (YYYY-MM-DD).",
+          "minLength": 8,
+          "maxLength": 16
+        },
+        "planId": {
+          "type": "string",
+          "description": "Internal LIC plan identifier.",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "planName": {
+          "type": "string",
+          "description": "Display name of the LIC plan.",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "planNo": {
+          "type": "string",
+          "description": "LIC Table/Plan number (e.g. 715, 736, 745).",
+          "minLength": 2,
+          "maxLength": 32
+        },
+        "sumAssured": {
+          "type": "number",
+          "description": "Basic Sum Assured in INR."
+        },
+        "premiumAmount": {
+          "type": "number",
+          "description": "Modal renewal premium amount including GST in INR."
+        },
+        "paymentMode": {
+          "type": "string",
+          "description": "Premium payment mode.",
+          "enum": [
+            "Yearly",
+            "Half-Yearly",
+            "Quarterly",
+            "Monthly (NACH)",
+            "Single"
+          ]
+        },
+        "policyTerm": {
+          "type": "number",
+          "description": "Policy Term in years."
+        },
+        "ppt": {
+          "type": "number",
+          "description": "Premium Paying Term in years."
+        },
+        "commencementDate": {
+          "type": "string",
+          "description": "Policy commencement date (YYYY-MM-DD).",
+          "minLength": 8,
+          "maxLength": 16
+        },
+        "nextRenewalDate": {
+          "type": "string",
+          "description": "Next premium due date (YYYY-MM-DD).",
+          "minLength": 8,
+          "maxLength": 16
+        },
+        "maturityDate": {
+          "type": "string",
+          "description": "Policy maturity date (YYYY-MM-DD).",
+          "minLength": 8,
+          "maxLength": 16
+        },
+        "maturityAmount": {
+          "type": "number",
+          "description": "Projected tax-free maturity benefit amount in INR."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current policy status.",
+          "enum": [
+            "Active",
+            "Grace Period",
+            "Lapsed",
+            "Matured"
+          ]
+        },
+        "lastReminderSentAt": {
+          "type": "string",
+          "description": "ISO date string when last renewal notification was sent.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of policy record creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last policy record update."
+        }
+      },
+      "required": [
+        "agentId",
+        "policyNumber",
+        "customerName",
+        "customerMobile",
+        "dateOfBirth",
+        "planId",
+        "planName",
+        "planNo",
+        "sumAssured",
+        "premiumAmount",
+        "paymentMode",
+        "policyTerm",
+        "ppt",
+        "commencementDate",
+        "nextRenewalDate",
+        "maturityDate",
+        "maturityAmount",
+        "status",
+        "lastReminderSentAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/agents/{agentId}": {
+      "schema": {
+        "$ref": "#/entities/AgentProfile"
+      },
+      "description": "Stores private LIC agent profiles keyed by Firebase Auth UID."
+    },
+    "/policies/{policyId}": {
+      "schema": {
+        "$ref": "#/entities/CustomerPolicy"
+      },
+      "description": "Stores customer LIC policies owned by a specific LIC agent."
+    }
+  }
+}

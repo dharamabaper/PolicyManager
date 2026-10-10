@@ -1,0 +1,6 @@
+{
+  "name": "BimaCalc Studio — LIC Actuarial Calculator & C# Android Suite",
+  "description": "Complete LIC agent premium calculator, actuarial benefit illustration engine, client quotation manager, and C# .NET MAUI Android source code generator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

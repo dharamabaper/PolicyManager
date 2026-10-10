@@ -1,0 +1,228 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default-Deny Catch-All Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Validation Blueprint: AgentProfile (/agents/{agentId})
+    function isValidAgentProfile(data) {
+      return data.keys().hasAll([
+        'uid',
+        'fullName',
+        'email',
+        'mobileNumber',
+        'agencyCode',
+        'branchCode',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid',
+        'fullName',
+        'email',
+        'mobileNumber',
+        'agencyCode',
+        'branchCode',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.uid == request.auth.uid &&
+      data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 100 &&
+      data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+      data.mobileNumber is string && data.mobileNumber.size() >= 8 && data.mobileNumber.size() <= 20 && data.mobileNumber.matches('^[0-9+\\-\\s()]{8,20}$') &&
+      data.agencyCode is string && data.agencyCode.size() >= 2 && data.agencyCode.size() <= 32 && data.agencyCode.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.branchCode is string && data.branchCode.size() >= 2 && data.branchCode.size() <= 32 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: CustomerPolicy (/policies/{policyId})
+    function isValidCustomerPolicy(data) {
+      return data.keys().hasAll([
+        'agentId',
+        'policyNumber',
+        'customerName',
+        'customerMobile',
+        'dateOfBirth',
+        'planId',
+        'planName',
+        'planNo',
+        'sumAssured',
+        'premiumAmount',
+        'paymentMode',
+        'policyTerm',
+        'ppt',
+        'commencementDate',
+        'nextRenewalDate',
+        'maturityDate',
+        'maturityAmount',
+        'status',
+        'lastReminderSentAt',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'agentId',
+        'policyNumber',
+        'customerName',
+        'customerMobile',
+        'dateOfBirth',
+        'planId',
+        'planName',
+        'planNo',
+        'sumAssured',
+        'premiumAmount',
+        'paymentMode',
+        'policyTerm',
+        'ppt',
+        'commencementDate',
+        'nextRenewalDate',
+        'maturityDate',
+        'maturityAmount',
+        'status',
+        'lastReminderSentAt',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128 && data.agentId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.agentId == request.auth.uid &&
+      data.policyNumber is string && data.policyNumber.size() >= 5 && data.policyNumber.size() <= 24 && data.policyNumber.matches('^[0-9A-Za-z\\-]{5,24}$') &&
+      data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 100 &&
+      data.customerMobile is string && data.customerMobile.size() >= 8 && data.customerMobile.size() <= 20 && data.customerMobile.matches('^[0-9+\\-\\s()]{8,20}$') &&
+      data.dateOfBirth is string && data.dateOfBirth.size() >= 8 && data.dateOfBirth.size() <= 16 &&
+      data.planId is string && data.planId.size() >= 2 && data.planId.size() <= 64 &&
+      data.planName is string && data.planName.size() >= 2 && data.planName.size() <= 120 &&
+      data.planNo is string && data.planNo.size() >= 2 && data.planNo.size() <= 32 &&
+      data.sumAssured is number && data.sumAssured >= 50000 && data.sumAssured <= 1000000000 &&
+      data.premiumAmount is number && data.premiumAmount >= 500 && data.premiumAmount <= 500000000 &&
+      data.paymentMode is string && data.paymentMode.size() <= 20 && data.paymentMode in ['Yearly', 'Half-Yearly', 'Quarterly', 'Monthly (NACH)', 'Single'] &&
+      data.policyTerm is number && data.policyTerm >= 1 && data.policyTerm <= 100 &&
+      data.ppt is number && data.ppt >= 1 && data.ppt <= 100 &&
+      data.commencementDate is string && data.commencementDate.size() >= 8 && data.commencementDate.size() <= 16 &&
+      data.nextRenewalDate is string && data.nextRenewalDate.size() >= 8 && data.nextRenewalDate.size() <= 16 &&
+      data.maturityDate is string && data.maturityDate.size() >= 8 && data.maturityDate.size() <= 16 &&
+      data.maturityAmount is number && data.maturityAmount >= 0 && data.maturityAmount <= 5000000000 &&
+      data.status is string && data.status.size() <= 20 && data.status in ['Active', 'Grace Period', 'Lapsed', 'Matured'] &&
+      data.lastReminderSentAt is string && data.lastReminderSentAt.size() >= 0 && data.lastReminderSentAt.size() <= 40 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /agents/{agentId} (PII Isolated to Owner Only)
+    match /agents/{agentId} {
+      allow get: if isVerifiedUser() && isValidId(agentId) && request.auth.uid == agentId;
+      allow list: if false;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(agentId) &&
+        request.auth.uid == agentId &&
+        isValidAgentProfile(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser() &&
+        isValidId(agentId) &&
+        request.auth.uid == agentId &&
+        isValidAgentProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().email == existing().email &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'fullName',
+          'mobileNumber',
+          'agencyCode',
+          'branchCode',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    // Collection 2: /policies/{policyId} (Agent-Scoped Customer Policies)
+    match /policies/{policyId} {
+      allow get: if isVerifiedUser() && isValidId(policyId) && existing().agentId == request.auth.uid;
+      allow list: if isVerifiedUser() && existing().agentId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(policyId) &&
+        isValidCustomerPolicy(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/agents/$(request.auth.uid));
+
+      allow update: if isVerifiedUser() &&
+        isValidId(policyId) &&
+        isValidCustomerPolicy(incoming()) &&
+        existing().agentId == request.auth.uid &&
+        existing().status != 'Matured' &&
+        incoming().agentId == existing().agentId &&
+        incoming().policyNumber == existing().policyNumber &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          // Action 1: Record Renewal Payment / Advance Due Date & Status
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'nextRenewalDate',
+            'status',
+            'lastReminderSentAt',
+            'updatedAt'
+          ]) ||
+          // Action 2: Log Renewal Notification Reminder Sent
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'lastReminderSentAt',
+            'updatedAt'
+          ]) ||
+          // Action 3: Full Policy Record Edit by Owning Agent
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'customerName',
+            'customerMobile',
+            'dateOfBirth',
+            'planId',
+            'planName',
+            'planNo',
+            'sumAssured',
+            'premiumAmount',
+            'paymentMode',
+            'policyTerm',
+            'ppt',
+            'commencementDate',
+            'nextRenewalDate',
+            'maturityDate',
+            'maturityAmount',
+            'status',
+            'lastReminderSentAt',
+            'updatedAt'
+          ])
+        );
+
+      allow delete: if isVerifiedUser() && isValidId(policyId) && existing().agentId == request.auth.uid;
+    }
+  }
+}
