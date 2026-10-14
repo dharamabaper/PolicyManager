@@ -97,7 +97,7 @@ export function generateLocalLicActuarialAnswer(
           urgentAlerts
             .map(
               (n, idx) =>
-                `${idx + 1}. **${n.policy.customerName}** (Policy \`#${n.policy.policyNumber}\` — ${n.policy.planName})\n   • **Status:** ${n.badgeText} on \`${n.dueDate}\` · Installment: **${formatInr(n.amount)}**\n   • **Mobile:** ${n.policy.customerMobile}`
+                `${idx + 1}. **${n.policy.customerName}** (Policy \`#${n.policy.policyNumber}\` — ${n.policy.planName})\n   • **Alert:** ${n.title}\n   • **Due Date:** \`${n.policy.nextRenewalDate}\` · Installment: **${formatInr(n.policy.premiumAmount)}**\n   • **Mobile:** ${n.policy.customerMobile}`
             )
             .join('\n\n')
         : `✅ All customer policies are currently up to date with no overdue renewals.`,
@@ -332,7 +332,9 @@ export function generateLocalLicActuarialAnswer(
     `• **1st Year Agent Commission (incl. Bonus):** ${formatInr(calc.agentFirstYearTotalCommission)}`,
     ``,
     `#### ✨ Key Highlights:`,
-    ...matchedPlan.keyHighlights.map((h) => `• ${h}`),
+    `• **Survival Benefit:** ${matchedPlan.survivalBenefitDescription}`,
+    `• **Death Benefit:** ${matchedPlan.deathBenefitDescription}`,
+    `• **Maturity Benefit:** ${matchedPlan.maturityBenefitDescription}`,
   ]
     .filter(Boolean)
     .join('\n');

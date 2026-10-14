@@ -1,6 +1,6 @@
 {
-  "name": "BimaCalc Studio — LIC Actuarial Calculator & C# Android Suite",
-  "description": "Complete LIC agent premium calculator, actuarial benefit illustration engine, client quotation manager, and C# .NET MAUI Android source code generator.",
+  "name": "Policy Manager - Agent",
+  "description": "LIC Agent native Android mobile app in Kotlin & Jetpack Compose. Actuarial premium calculation, policy vault, WhatsApp OTP, birthday greeting studio, and AI advisor.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

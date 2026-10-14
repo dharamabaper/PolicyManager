@@ -152,7 +152,7 @@ export const LicAiAdvisorView: React.FC<LicAiAdvisorViewProps> = ({
             Supports English, Hindi & Hinglish
           </span>
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {QUICK_AGENT_AI_PROMPTS.map((item) => (
             <button
               key={item.label}

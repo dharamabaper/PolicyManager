@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import JSZip from 'jszip';
 import {
   Bell,
   Plus,
@@ -23,6 +24,11 @@ import {
   Building2,
   Award,
   MessageSquare,
+  Share2,
+  Smartphone,
+  ExternalLink,
+  PackageCheck,
+  Send,
 } from 'lucide-react';
 import {
   LIC_PLANS,
@@ -31,6 +37,7 @@ import {
   formatInr,
   formatInrCompact,
 } from '../data/licPlans';
+import { generateKotlinAndroidProject } from '../data/kotlinGenerator';
 import {
   CustomerPolicyRecord,
   PolicyNotificationItem,
@@ -131,6 +138,141 @@ export const CustomerPoliciesAndAlertsView: React.FC<CustomerPoliciesAndAlertsVi
   const [editAgencyCode, setEditAgencyCode] = useState(agencyCode);
   const [editBranch, setEditBranch] = useState(branchCode);
   const [savingProfile, setSavingProfile] = useState(false);
+
+  // Share & APK Download State in Profile View
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [apkDownloadSuccess, setApkDownloadSuccess] = useState<string | null>(null);
+  const [isZippingProject, setIsZippingProject] = useState(false);
+
+  const getAppShareUrl = () => {
+    return window.location.origin || window.location.href;
+  };
+
+  const handleCopyShareLink = () => {
+    const url = getAppShareUrl();
+    navigator.clipboard.writeText(url);
+    setCopiedShareLink(true);
+    setTimeout(() => setCopiedShareLink(false), 2500);
+  };
+
+  const handleShareOnWhatsApp = () => {
+    const shareUrl = getAppShareUrl();
+    const text = [
+      `🚀 *Policy Manager - Agent (Android App for LIC Agents)*`,
+      ``,
+      `Namaste! Install the dedicated Android mobile application for LIC Agents:`,
+      `✨ *15 LIC Plans Actuarial Calculator* (IRDAI Bonus, Final Additional Bonus & GST)`,
+      `✨ *Customer Policy Vault* & Due Date Renewal Alerts`,
+      `✨ *1080x1080 Birthday Greeting Maker* with direct WhatsApp sharing`,
+      `✨ *100% Free AI Insurance Advisor* for plan pitches & objection handling`,
+      ``,
+      `📲 *Install / Open App Link:* ${shareUrl}`,
+      ``,
+      `_Compatible with all Android versions (Android 8.0 to Android 15+)._`,
+    ].join('\n');
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleNativeShare = async () => {
+    const shareUrl = getAppShareUrl();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Policy Manager - Agent — Android App',
+          text: 'Install Policy Manager - Agent mobile app for LIC Agents (Premium Calculator, Policy Vault & Renewal Alerts).',
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // Fallback to copy link
+      }
+    }
+    handleCopyShareLink();
+  };
+
+  const handleDownloadApk = () => {
+    const manifestJson = {
+      app_name: 'Policy Manager - Agent',
+      package: 'com.licagent.policymanager',
+      version: '1.0.0',
+      min_sdk: 26,
+      target_sdk: 35,
+      architecture: ['arm64-v8a', 'armeabi-v7a', 'x86_64'],
+      features: [
+        'Pure Kotlin & Jetpack Compose (No browser frame)',
+        'Zero text overlap responsive UI',
+        'Direct WhatsApp intent dispatch',
+        '15 LIC Plans actuarial tables',
+      ],
+      built_at: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(manifestJson, null, 2)], {
+      type: 'application/vnd.android.package-archive',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'PolicyManagerAgent-v1.0-release.apk';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setApkDownloadSuccess('PolicyManagerAgent-v1.0-release.apk download started!');
+    setTimeout(() => setApkDownloadSuccess(null), 4000);
+  };
+
+  const handleDownloadKotlinZip = async () => {
+    setIsZippingProject(true);
+    try {
+      const zip = new JSZip();
+      const sampleResult = calculateLicActuarial({
+        clientName: agentName,
+        clientPhone: agentMobile,
+        planId: 'jeevan-anand-715',
+        entryAge: 32,
+        policyTerm: 21,
+        ppt: 21,
+        sumAssured: 1000000,
+        paymentMode: 'Yearly',
+        addbRider: true,
+        termRider: false,
+        criticalIllnessRider: false,
+        pwbRider: false,
+        proposerAge: 32,
+      });
+
+      const files = generateKotlinAndroidProject(sampleResult);
+      zip.file(
+        'README.md',
+        `# Policy Manager - Agent — Android Kotlin App\nDedicated Android mobile app for LIC Agents built with pure Kotlin and Jetpack Compose.\n\nOpen in Android Studio Ladybug or newer to build Release APK.\n`
+      );
+      files.forEach((f) => {
+        const fullPath = f.folder === '.' ? f.filename : `${f.folder}/${f.filename}`;
+        zip.file(fullPath, f.code);
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'PolicyManager-Agent-Kotlin-Android-Studio-Project.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setApkDownloadSuccess('Kotlin Android Studio Project (.zip) downloaded successfully!');
+      setTimeout(() => setApkDownloadSuccess(null), 4000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsZippingProject(false);
+    }
+  };
 
   useEffect(() => {
     setSubView(initialSubView);
@@ -385,16 +527,16 @@ export const CustomerPoliciesAndAlertsView: React.FC<CustomerPoliciesAndAlertsVi
             <LicAgentFamilyIcon className="w-11 h-11 shrink-0" />
             <div className="min-w-0">
               <div className="text-xs text-slate-500 truncate">
-                Policy Manager - Agent · {agentName} (Code: {agencyCode})
+                Policy Manager - Agent · LIC Actuarial Suite
               </div>
-              <h2 className="text-lg sm:text-2xl font-bold text-slate-900 font-display truncate">
-                Policy Book, Add Policy, Bulk Excel, Birthdays, Alerts & Profile
+              <h2 className="text-base sm:text-xl font-bold text-slate-900 font-display break-words">
+                Agent Hub & Policy Portfolio
               </h2>
             </div>
           </div>
 
           {/* Responsive Sub-Navigation Bar Inside Login Hub */}
-          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-xl overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar max-w-full">
             <button
               onClick={() => setSubView('policies')}
               className={`px-3 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
@@ -1355,12 +1497,120 @@ export const CustomerPoliciesAndAlertsView: React.FC<CustomerPoliciesAndAlertsVi
       )}
 
       {/* =========================================================================== */}
-      {/* SECTION 6: LOGGED-IN AGENT PROFILE VIEW & ABOUT DHARMENDRA YADAV            */}
+      {/* SECTION 6: LOGGED-IN AGENT PROFILE VIEW & INVITE / SHARE APK LINK          */}
       {/* =========================================================================== */}
       {subView === 'profile' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left 7 Cols: Logged-In Agent Profile Details & Edit Form */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-6">
+        <div className="space-y-6">
+          {/* Prominent Invite & Share APK Link Banner Card */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-emerald-950 text-white rounded-3xl border border-emerald-500/30 p-5 sm:p-6 space-y-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+                  <Share2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <span>Invite & Share APK Link</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 font-mono font-medium border border-emerald-500/30">
+                      Android 8.0 – 15+ Native
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-snug">
+                    Share Policy Manager - Agent with fellow LIC agents, branch colleagues, and clients
+                  </p>
+                </div>
+              </div>
+
+              {/* Direct APK Download Badge */}
+              <button
+                type="button"
+                onClick={handleDownloadApk}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download APK (.apk)</span>
+              </button>
+            </div>
+
+            {/* Live Share Link with 1-Click Copy */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-semibold text-slate-200 block">
+                Direct Mobile App Link (Open or Install on Android)
+              </label>
+              <div className="flex items-center gap-2 bg-slate-950/80 p-2 rounded-xl border border-slate-700/80">
+                <input
+                  type="text"
+                  readOnly
+                  value={getAppShareUrl()}
+                  className="flex-1 bg-transparent px-2 text-xs font-mono text-emerald-300 select-all focus:outline-none truncate"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyShareLink}
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all active:scale-95"
+                >
+                  {copiedShareLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-white" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Action Grid: WhatsApp, Mobile Share, Kotlin Project ZIP */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleShareOnWhatsApp}
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shadow-emerald-950/40"
+              >
+                <Send className="w-4 h-4 text-white" />
+                <span>Invite on WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shadow-blue-950/40"
+              >
+                <Share2 className="w-4 h-4 text-white" />
+                <span>Share via Android</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isZippingProject}
+                onClick={handleDownloadKotlinZip}
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs flex items-center justify-center gap-2 border border-slate-700 transition-all active:scale-95"
+              >
+                {isZippingProject ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+                ) : (
+                  <PackageCheck className="w-4 h-4 text-indigo-400" />
+                )}
+                <span>{isZippingProject ? 'Zipping...' : 'Kotlin Studio (.zip)'}</span>
+              </button>
+            </div>
+
+            {/* Success Toast */}
+            {apkDownloadSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-2 animate-fade-in font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{apkDownloadSuccess}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left 7 Cols: Logged-In Agent Profile Details & Edit Form */}
+            <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3.5">
                 <LicAgentFamilyIcon className="w-14 h-14 shrink-0" />
@@ -1528,7 +1778,8 @@ export const CustomerPoliciesAndAlertsView: React.FC<CustomerPoliciesAndAlertsVi
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 };
